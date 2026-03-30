@@ -12,6 +12,7 @@ This template runs **Nanobot gateway** + an **admin dashboard** on Railway via D
 - **Gateway process** (`nanobot gateway`) that you can start/stop/restart from the dashboard
 - **Healthcheck** endpoint: `/health`
 - **Persistent data** stored under `/data/.nanobot` (works great with a Railway Volume)
+- **Model selection** in the **AI Providers** tab (per provider, after you enter an API key). The active model is stored as `agents.defaults.model` in the form `provider/model-id`. Curated lists are ordered from **smallest / lowest tier first**; the first option is the default when you add a new API key.
 
 Note: **Nanobot is not a chat interface** — it’s a backend API gateway for routing across multiple LLM providers.
 
