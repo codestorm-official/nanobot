@@ -268,9 +268,15 @@ async def api_status(request: Request):
     for name, prov in data["providers"].items():
         providers[name] = {"configured": bool(prov.get("api_key"))}
 
+    # ChannelsConfig mixes global fields (send_progress, …) with per-channel dicts (telegram, …).
+    # Only dict-shaped entries represent actual channels with an "enabled" flag.
     channels = {}
     for name, chan in data["channels"].items():
-        channels[name] = {"enabled": chan.get("enabled", False)}
+        if not isinstance(chan, dict):
+            continue
+        if "enabled" not in chan:
+            continue
+        channels[name] = {"enabled": bool(chan.get("enabled", False))}
 
     cron_dir = Path.home() / ".nanobot" / "cron"
     cron_jobs = []
