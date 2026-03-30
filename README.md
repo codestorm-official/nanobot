@@ -1,74 +1,66 @@
 ![Nanobot](https://github.com/HKUDS/nanobot/raw/main/nanobot_logo.png)
 
-## Nanobot AI on Railway (Template)
+## Nanobot on Railway — usage guide
 
-This template runs **Nanobot gateway** + an **admin dashboard** on Railway via Docker.
+This template runs the **Nanobot gateway** and **admin dashboard** via Docker. Nanobot is a backend for routing requests across multiple LLM providers and messaging channels (e.g. Telegram), not a full chat UI.
 
-## Architecture
 ![Architecture](https://github.com/HKUDS/nanobot/raw/main/nanobot_arch.png)
 
-## What this template provides
-- **Admin dashboard** (Starlette + Jinja + Tailwind CDN)
-- **Gateway process** (`nanobot gateway`) that you can start/stop/restart from the dashboard
-- **Healthcheck** endpoint: `/health`
-- **Persistent data** stored under `/data/.nanobot` (works great with a Railway Volume)
-- **Model selection** in the **AI Providers** tab (per provider, after you enter an API key). The active model is stored as `agents.defaults.model` in the form `provider/model-id`. Curated lists are ordered from **smallest / lowest tier first**; the first option is the default when you add a new API key.
+### Step 1 — Deploy on Railway
 
-Note: **Nanobot is not a chat interface** — it’s a backend API gateway for routing across multiple LLM providers.
+1. Create a new Railway project from this repository (or use a Railway template if available).
+2. The build uses the `Dockerfile` (configured in `railway.toml`).
+3. Railway will assign a public URL automatically.
+4. **Strongly recommended:** add a **Volume** mounted at `/data` so configuration and data persist across redeploys.
 
-## Common Use Cases
-**📅 Smart Daily Routine Manager**
-![Architecture](https://github.com/HKUDS/nanobot/raw/main/case/scedule.gif)
+### Step 2 — Admin username and password
 
-**📈 24/7 Real-Time Market Analysis**
-![Market Analyzer](https://github.com/HKUDS/nanobot/raw/main/case/search.gif)
+Set these in Railway environment variables:
 
-## Deploy to Railway
-- Create a new Railway project from this repository
-- Build uses `Dockerfile` (configured in `railway.toml`)
-- Railway will provide a public URL automatically
+- **`ADMIN_USERNAME`** — username for dashboard login.
+- **`ADMIN_PASSWORD`** — password for dashboard login.
 
-Recommended:
-- Add a **Volume** mounted at `/data` so config & sessions persist across deploys
-
-## Environment Variables
-
-Required:
-- **ADMIN_USERNAME**: Basic Auth username for dashboard
-- **ADMIN_PASSWORD**: Basic Auth password for dashboard
-
-Provided by Railway:
-- **PORT**: app listens on this port (defaults to `8080` if not set)
-
-Security note:
-- If `ADMIN_PASSWORD` is empty, the server will auto-generate a password and print it to logs. For templates/public repos, always set `ADMIN_PASSWORD`.
+`PORT` is usually provided by Railway. If **`ADMIN_PASSWORD`** is empty, the server may generate a random password and print it to the logs — for production, always set it explicitly.
 
 See `.env.example` for a starting point.
 
-## Endpoints
-- **GET /**: Admin dashboard (Basic Auth)
-- **GET /health**: Healthcheck
-- **GET /api/config**: Read config (secrets are masked)
-- **PUT /api/config**: Save config (optionally restart gateway)
-- **GET /api/status**: Gateway status + provider/channel summary + cron jobs
-- **GET /api/logs**: Gateway logs (for dashboard)
-- **POST /api/gateway/start**: Start gateway
-- **POST /api/gateway/stop**: Stop gateway
-- **POST /api/gateway/restart**: Restart gateway
+### Step 3 — LLM API keys and models
 
-## FAQ
+1. Open the Nanobot dashboard (your Railway URL) and sign in with Basic Auth using the credentials above.
+2. Open the **AI Providers** tab.
+3. For each provider you use (e.g. OpenAI, Groq, Gemini), enter the **API Key**.
+4. Choose the **model** you want (curated lists; **Others** for a custom model id).
+5. Turn on one provider as the default (toggle) as needed.
+6. Save configuration from the dashboard (data is stored on the `/data` volume).
 
-**Can I use Nanobot without Railway?**  
-Yes. Nanobot is open source and runs anywhere Docker works. Railway just makes deployment faster with automatic container hosting and environment management.
+### Step 4 — Messaging channels (example: Telegram bot)
 
-**How much does it cost to host Nanobot on Railway?**  
-Railway's free tier includes $5 credit per month. Basic Nanobot deployments typically cost $5-15/month depending on traffic. LLM API costs are separate and billed by your providers.
+1. Open the **Channels** tab.
+2. For **Telegram**, enable the channel and paste the **token** from BotFather.
+3. Set **Allowed User IDs** — use `*` alone to allow everyone, or comma-separated numeric IDs.
+4. Configure other channels (WhatsApp bridge, Feishu, etc.) here per their documentation.
+5. Save your changes in the dashboard.
 
-**Can I add multiple LLM providers to one Nanobot instance?**  
-Yes, that's the main point. You configure multiple providers (OpenAI, Anthropic, Cohere, etc.) and route requests between them based on your rules.
+### Step 5 — Run the gateway and test
 
-**Do I need coding knowledge to deploy nanobot?**  
-Not really. The Railway template handles deployment automatically. You just need to set environment variables for your API keys. Managing routing rules through the admin dashboard is point-and-click.
+1. Under **Settings** or the **Save & Start** flow on Overview, apply configuration and start or **Restart** the **gateway** from the dashboard when available.
+2. Check **Logs** to confirm the gateway is running without errors.
+3. Send a test message to your Telegram bot (or another channel you configured).
 
-## Upstream project
-- Nanobot: https://github.com/HKUDS/nanobot
+### Key endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /` | Admin dashboard (Basic Auth) |
+| `GET /health` | Healthcheck (for Railway) |
+| `GET /api/config` | Read configuration (secrets masked) |
+| `PUT /api/config` | Save configuration |
+| `GET /api/status` | Gateway status; provider/channel summary |
+| `GET /api/logs` | Gateway logs |
+| `POST /api/gateway/start` | Start gateway |
+| `POST /api/gateway/stop` | Stop gateway |
+| `POST /api/gateway/restart` | Restart gateway |
+
+### Upstream project
+
+- Upstream Nanobot: https://github.com/HKUDS/nanobot

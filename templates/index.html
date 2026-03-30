@@ -78,37 +78,21 @@
       <div>
         <h3 class="px-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">Setup Workflow</h3>
         <div class="space-y-0.5">
-          <button @click="tab = 'overview'"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            :class="tab === 'overview' ? 'text-white' : 'text-gray-500 hover:text-gray-300'">
-            <div class="w-4 h-4 rounded-full border-2 transition-colors flex items-center justify-center"
-              :class="tab === 'overview' ? 'border-white' : 'border-gray-600'">
-              <div class="w-1.5 h-1.5 rounded-full bg-white" x-show="tab === 'overview'"></div>
-            </div>
+          <button @click="tab = 'overview'; overviewStepFocus = null" type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 border-l-2"
+            :class="tab === 'overview' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/60'">
             Overview
           </button>
 
-          <button @click="tab = 'providers'"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 relative group"
-            :class="tab === 'providers' ? 'text-white' : 'text-gray-500 hover:text-gray-300'">
-            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-              :class="tab === 'providers' ? 'border-white' : (configuredProviderCount > 0 ? 'border-emerald-500/50' : 'border-gray-600')">
-              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                x-show="configuredProviderCount > 0 && tab !== 'providers'"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-white" x-show="tab === 'providers'"></div>
-            </div>
+          <button @click="tab = 'providers'; overviewStepFocus = 1" type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 border-l-2"
+            :class="tab === 'providers' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/60'">
             AI Providers
           </button>
 
-          <button @click="tab = 'channels'"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            :class="tab === 'channels' ? 'text-white' : 'text-gray-500 hover:text-gray-300'">
-            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-              :class="tab === 'channels' ? 'border-white' : (enabledChannelCount > 0 ? 'border-emerald-500/50' : 'border-gray-600')">
-              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                x-show="enabledChannelCount > 0 && tab !== 'channels'"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-white" x-show="tab === 'channels'"></div>
-            </div>
+          <button @click="tab = 'channels'; overviewStepFocus = 2" type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 border-l-2"
+            :class="tab === 'channels' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/60'">
             Channels
           </button>
         </div>
@@ -118,21 +102,15 @@
       <div>
         <h3 class="px-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-2">System</h3>
         <div class="space-y-0.5">
-          <button @click="tab = 'settings'"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            :class="tab === 'settings' ? 'text-white' : 'text-gray-500 hover:text-gray-300'">
-            <div
-              class="w-4 h-4 rounded border-2 border-dashed border-gray-600 flex items-center justify-center transition-colors"
-              :class="{'!border-white border-solid': tab === 'settings'}"></div>
+          <button @click="tab = 'settings'; overviewStepFocus = 3" type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 border-l-2"
+            :class="tab === 'settings' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/60'">
             Settings
           </button>
 
-          <button @click="tab = 'logs'"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-            :class="tab === 'logs' ? 'text-white' : 'text-gray-500 hover:text-gray-300'">
-            <div
-              class="w-4 h-4 rounded border-2 border-dashed border-gray-600 flex items-center justify-center transition-colors"
-              :class="{'!border-white border-solid': tab === 'logs'}"></div>
+          <button @click="tab = 'logs'; overviewStepFocus = 4" type="button"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 border-l-2"
+            :class="tab === 'logs' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/60'">
             Logs
           </button>
         </div>
@@ -201,7 +179,7 @@
         <!-- Active Providers -->
         <div
           class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors cursor-pointer"
-          @click="tab = 'providers'">
+          @click="tab = 'providers'; overviewStepFocus = 1">
           <h3 class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Active Providers</h3>
           <div class="flex items-center justify-between">
             <span class="text-3xl font-medium" x-text="configuredProviderCount"></span>
@@ -212,7 +190,7 @@
         <!-- Enabled Channels -->
         <div
           class="bg-gray-900/50 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors cursor-pointer"
-          @click="tab = 'channels'">
+          @click="tab = 'channels'; overviewStepFocus = 2">
           <h3 class="text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">Enabled Channels</h3>
           <div class="flex items-center justify-between">
             <span class="text-3xl font-medium" x-text="enabledChannelCount"></span>
@@ -230,60 +208,58 @@
 
           <div class="flex justify-between items-start">
             <!-- Step 1 -->
-            <div class="flex flex-col items-center gap-3 group cursor-pointer" @click="tab = 'providers'">
+            <div class="flex flex-col items-center gap-3 group cursor-pointer"
+              @click="overviewStepFocus = 1; tab = 'providers'">
               <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center bg-black transition-colors"
-                :class="configuredProviderCount > 0 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
-                <span x-show="configuredProviderCount == 0">1</span>
-                <svg x-show="configuredProviderCount > 0" class="w-4 h-4" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+                :class="overviewStepFocus === 1 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
+                <span>1</span>
               </div>
               <div class="text-center">
-                <p class="text-sm font-medium" :class="configuredProviderCount > 0 ? 'text-white' : 'text-gray-400'">Add
-                  Provider</p>
+                <p class="text-sm font-medium"
+                  :class="overviewStepFocus === 1 ? 'text-white' : 'text-gray-400'">Add Provider</p>
                 <p class="text-xs text-gray-600 mt-1">Configure at least one AI model</p>
               </div>
             </div>
 
             <!-- Step 2 -->
-            <div class="flex flex-col items-center gap-3 group cursor-pointer" @click="tab = 'channels'">
+            <div class="flex flex-col items-center gap-3 group cursor-pointer"
+              @click="overviewStepFocus = 2; tab = 'channels'">
               <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center bg-black transition-colors"
-                :class="enabledChannelCount > 0 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
-                <span x-show="enabledChannelCount == 0">2</span>
-                <svg x-show="enabledChannelCount > 0" class="w-4 h-4" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+                :class="overviewStepFocus === 2 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
+                <span>2</span>
               </div>
               <div class="text-center">
-                <p class="text-sm font-medium" :class="enabledChannelCount > 0 ? 'text-white' : 'text-gray-400'">Add
-                  Channel</p>
+                <p class="text-sm font-medium"
+                  :class="overviewStepFocus === 2 ? 'text-white' : 'text-gray-400'">Add Channel</p>
                 <p class="text-xs text-gray-600 mt-1">Connect a messaging platform</p>
               </div>
             </div>
 
             <!-- Step 3 -->
-            <div class="flex flex-col items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-full border-2 border-gray-700 flex items-center justify-center bg-black text-gray-500">
+            <div class="flex flex-col items-center gap-3 group cursor-pointer"
+              @click="overviewStepFocus = 3; tab = 'settings'">
+              <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center bg-black transition-colors"
+                :class="overviewStepFocus === 3 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
                 <span>3</span>
               </div>
               <div class="text-center">
-                <p class="text-sm font-medium text-gray-400">Save & Start</p>
+                <p class="text-sm font-medium"
+                  :class="overviewStepFocus === 3 ? 'text-white' : 'text-gray-400'">Save &amp; Start</p>
                 <p class="text-xs text-gray-600 mt-1">Apply changes and launch gateway</p>
               </div>
             </div>
 
             <!-- Step 4 -->
-            <div class="flex flex-col items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-full border-2 border-gray-700 flex items-center justify-center bg-black text-gray-500">
+            <div class="flex flex-col items-center gap-3 group cursor-pointer"
+              @click="overviewStepFocus = 4; tab = 'logs'">
+              <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center bg-black transition-colors"
+                :class="overviewStepFocus === 4 ? 'border-emerald-500 text-emerald-500' : 'border-gray-700 text-gray-500 group-hover:border-gray-500'">
                 <span>4</span>
               </div>
               <div class="text-center">
-                <p class="text-sm font-medium text-gray-400">Verify</p>
-                <p class="text-xs text-gray-600 mt-1">Send a test message to your bot (e.g. on Telegram) and confirm it replies.</p>
+                <p class="text-sm font-medium"
+                  :class="overviewStepFocus === 4 ? 'text-white' : 'text-gray-400'">Verify</p>
+                <p class="text-xs text-gray-600 mt-1">Send a test message to your bot</p>
               </div>
             </div>
           </div>
@@ -315,7 +291,8 @@
 
             <div class="flex items-center gap-3 mb-4">
               <div class="w-8 h-8 shrink-0 rounded bg-gray-800 overflow-hidden flex items-center justify-center">
-                <img :src="providerIconSrc(p.key)" :alt="p.label" class="w-8 h-8 object-contain"
+                <img :src="providerIconSrc(p.key)" :alt="p.label"
+                  :class="providerIconIsColor(p.key) ? 'w-8 h-8 object-contain' : 'w-8 h-8 object-contain brightness-0 invert opacity-90'"
                   @error="$event.target.classList.add('hidden'); const el = $event.target.nextElementSibling; if (el) { el.classList.remove('hidden'); el.classList.add('flex'); }">
                 <span class="hidden h-full w-full items-center justify-center text-xs font-bold text-gray-400 uppercase"
                   x-text="p.label[0]"></span>
@@ -390,7 +367,7 @@
       </div>
 
       <div class="flex justify-end pt-4">
-        <button @click="tab = 'channels'"
+        <button @click="tab = 'channels'; overviewStepFocus = 2"
           class="flex items-center gap-2 px-5 py-2.5 bg-white text-black hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors">
           <span>Next: Configure Channels</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +392,8 @@
             @click="config.channels.telegram.enabled = !config.channels.telegram.enabled">
             <div class="flex items-center gap-4">
               <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5">
-                <img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@14.0.0/icons/telegram.svg" alt=""
+                  class="w-7 h-7 object-contain brightness-0 invert opacity-90" width="28" height="28" loading="lazy">
               </div>
               <div>
                 <h3 class="font-medium text-white">Telegram</h3>
@@ -463,7 +441,8 @@
             @click="config.channels.whatsapp.enabled = !config.channels.whatsapp.enabled">
             <div class="flex items-center gap-4">
               <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5">
-                <img src="https://cdn.simpleicons.org/whatsapp/25D366" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+                <img src="https://cdn.jsdelivr.net/npm/simple-icons@14.0.0/icons/whatsapp.svg" alt=""
+                  class="w-7 h-7 object-contain brightness-0 invert opacity-90" width="28" height="28" loading="lazy">
               </div>
               <div>
                 <h3 class="font-medium text-white">Whatsapp</h3>
@@ -503,7 +482,8 @@
           class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 flex items-center justify-between opacity-50 cursor-not-allowed">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5 opacity-60">
-              <img src="https://cdn.simpleicons.org/discord/5865F2" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@14.0.0/icons/discord.svg" alt=""
+                class="w-7 h-7 object-contain brightness-0 invert opacity-90" width="28" height="28" loading="lazy">
             </div>
             <div>
               <h3 class="font-medium text-gray-400">Discord</h3>
@@ -520,7 +500,8 @@
           class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 flex items-center justify-between opacity-50 cursor-not-allowed">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5 opacity-60">
-              <img src="https://cdn.simpleicons.org/slack/4A154B" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@14.0.0/icons/slack.svg" alt=""
+                class="w-7 h-7 object-contain brightness-0 invert opacity-90" width="28" height="28" loading="lazy">
             </div>
             <div>
               <h3 class="font-medium text-gray-400">Slack</h3>
@@ -538,7 +519,11 @@
             @click="config.channels.feishu.enabled = !config.channels.feishu.enabled">
             <div class="flex items-center gap-4">
               <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5">
-                <img src="https://cdn.simpleicons.org/lark/00D6B9" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+                <svg class="w-7 h-7 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="24" height="24" rx="5" fill="#00D6B9" />
+                  <path fill="#fff"
+                    d="M7 8h3.5c2 0 3.5 1.2 3.5 3 0 1.1-.5 2-1.4 2.5l2.4 3.5H12l-2-3h-1v3H7V8zm2.5 4c.8 0 1.3-.4 1.3-1s-.5-1-1.3-1H9v2h.5z" />
+                </svg>
               </div>
               <div>
                 <h3 class="font-medium text-white">Feishu</h3>
@@ -579,7 +564,11 @@
           class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 flex items-center justify-between opacity-50 cursor-not-allowed">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-lg bg-gray-800 overflow-hidden flex items-center justify-center p-1.5 opacity-60">
-              <img src="https://cdn.simpleicons.org/dingtalk/0088FF" alt="" class="w-7 h-7 object-contain" width="28" height="28" loading="lazy">
+              <svg class="w-7 h-7 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="24" height="24" rx="5" fill="#0088FF" />
+                <path fill="#fff"
+                  d="M7 9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2l-1.5 2V16H9a2 2 0 0 1-2-2V9zm2 1v4h6v-4H9zm0 6h4v1H9v-1z" />
+              </svg>
             </div>
             <div>
               <h3 class="font-medium text-gray-400">Dingtalk</h3>
@@ -681,6 +670,8 @@
     function app() {
       return {
         tab: 'overview',
+        /** Which setup step (1–4) is highlighted on Overview; green when selected. */
+        overviewStepFocus: null,
         config: defaultConfig(),
         status: {},
         logs: [],
@@ -775,19 +766,44 @@
           return n;
         },
 
-        /** Brand icons (Simple Icons CDN). Fallback letter on image error. */
+        /**
+         * Provider logos: jsDelivr hosts Simple Icons reliably (cdn.simpleicons.org often 404s).
+         * Groq / DeepSeek / Zhipu are not in older icon sets — use small inline SVG data-URIs.
+         */
+        providerIconIsColor(key) {
+          return ['groq', 'deepseek', 'zhipu', 'openrouter'].includes(key);
+        },
+
         providerIconSrc(key) {
-          const icons = {
-            gemini: 'https://cdn.simpleicons.org/googlegemini/4285F4',
-            anthropic: 'https://cdn.simpleicons.org/anthropic/D4A27F',
-            groq: 'https://cdn.simpleicons.org/groq/F55036',
-            openai: 'https://cdn.simpleicons.org/openai/412991',
-            openrouter: 'https://cdn.simpleicons.org/openrouter/6366F1',
-            deepseek: 'https://cdn.simpleicons.org/deepseek/4D6BFE',
-            zhipu: 'https://cdn.simpleicons.org/zhipu/1E88E5',
-            vllm: 'https://cdn.simpleicons.org/huggingface/FFD21E',
+          const jsdelivr = (slug) =>
+            `https://cdn.jsdelivr.net/npm/simple-icons@14.0.0/icons/${slug}.svg`;
+
+          const inlineSvg = (svg) =>
+            'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+
+          const colored = {
+            groq: inlineSvg(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#F55036"/><path fill="#fff" d="M6 7h2v10H6V7zm4 0h2v4h3V7h2v10h-2v-4h-3v4H10V7z"/></svg>',
+            ),
+            deepseek: inlineSvg(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#4D6BFE"/><path fill="#fff" d="M7 7h2l3.5 5.5V7h2v10h-2l-3.5-5.5V17H7V7z"/></svg>',
+            ),
+            zhipu: inlineSvg(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1E88E5"/><path fill="#fff" d="M8 7h8v2h-5l4 8H7v-2h4.2L8 9V7z"/></svg>',
+            ),
+            openrouter: inlineSvg(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#6366F1"/><path fill="#fff" d="M6 7h3c2.2 0 4 1.5 4 3.5S11.2 14 9 14H8v3H6V7zm2 2v3h1c1 0 1.7-.7 1.7-1.5S10 9 9 9H8zm5-2h2v4.2l3-4.2h2.2l-3.2 4.3 3.4 5.7H18l-2.5-4.2L15 17h-2V7z"/></svg>',
+            ),
           };
-          return icons[key] || '';
+          if (colored[key]) return colored[key];
+
+          const map = {
+            gemini: jsdelivr('googlegemini'),
+            anthropic: jsdelivr('anthropic'),
+            openai: jsdelivr('openai'),
+            vllm: jsdelivr('huggingface'),
+          };
+          return map[key] || '';
         },
 
         getProvider(key, field) {
