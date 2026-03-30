@@ -17,4 +17,6 @@ RUN chmod +x /app/start.sh
 ENV HOME=/data
 ENV NANOBOT_AGENTS__DEFAULTS__WORKSPACE=/data/.nanobot/workspace
 
+EXPOSE 8080
+
 CMD ["/app/start.sh"]
