@@ -302,9 +302,16 @@
         <template x-for="p in providerList" :key="p.key">
           <div
             class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-all duration-200 group relative">
-            <!-- Provider Status Dot -->
-            <div class="absolute top-5 right-5 w-2 h-2 rounded-full"
-              :class="getProvider(p.key, 'apiKey') ? 'bg-emerald-500' : 'bg-gray-700'"></div>
+            <!-- Provider Toggle (only one provider ON at a time) -->
+            <div class="absolute top-5 right-5">
+              <div
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out cursor-pointer"
+                :class="isProviderOn(p.key) ? 'bg-white' : 'bg-gray-800'"
+                @click="toggleProvider(p.key)">
+                <span class="inline-block h-4 w-4 transform rounded-full bg-black transition duration-200 ease-in-out"
+                  :class="isProviderOn(p.key) ? 'translate-x-6' : 'translate-x-1'"></span>
+              </div>
+            </div>
 
             <div class="flex items-center gap-3 mb-4">
               <div
@@ -315,34 +322,64 @@
 
             <div class="space-y-4">
               <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">API Key</label>
                 <input type="password"
                   class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2.5 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-600 transition-colors"
                   :value="getProvider(p.key, 'apiKey')" @input="setProviderApiKey(p.key, $event.target.value)"
-                  placeholder="API Key">
+                  placeholder="Paste your secret key">
+                <p class="text-[10px] text-gray-600 mt-1.5">
+                  Secret from this provider’s developer console. Required when this provider is ON (so Nanobot can call the API).
+                </p>
               </div>
               <div x-show="p.hasBase">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Base URL</label>
                 <input type="text"
                   class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2.5 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-600 transition-colors"
                   :value="getProvider(p.key, 'apiBase')" @input="setProvider(p.key, 'apiBase', $event.target.value)"
-                  :placeholder="p.basePlaceholder || 'Base URI (Optional)'">
-              </div>
-              <div x-show="getProvider(p.key, 'apiKey') && getModelsForProvider(p.key).length">
-                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Model</label>
-                <p class="text-xs text-gray-500 mb-2" x-show="!isActiveProviderModel(p.key)">
-                  Current active model: <span class="font-mono text-gray-400" x-text="config.agents.defaults.model || '—'"></span>.
-                  Choose a model below to use this provider.
+                  :placeholder="p.basePlaceholder || 'https://...'">
+                <p class="text-[10px] text-gray-600 mt-1.5" x-show="p.key === 'openrouter'">
+                  OpenAI-compatible API base URL. Leave empty to use OpenRouter’s default endpoint.
                 </p>
-                <p class="text-xs text-emerald-500/90 mb-2" x-show="isActiveProviderModel(p.key)">Active model for this deployment</p>
-                <select
-                  class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-600 transition-colors"
-                  :key="(config.agents.defaults.model || '') + '-' + p.key"
-                  :value="getModelIdForProvider(p.key)"
-                  @change="setProviderModel(p.key, $event.target.value)">
-                  <template x-for="mid in getModelsForProvider(p.key)" :key="mid">
-                    <option :value="mid" x-text="mid"></option>
-                  </template>
-                </select>
-                <p class="text-[10px] text-gray-600 mt-1.5">Lists are ordered from smallest / lowest tier first (default).</p>
+                <p class="text-[10px] text-gray-600 mt-1.5" x-show="p.key === 'vllm'">
+                  Your vLLM (or compatible) server URL — the OpenAI-compatible “/v1” base (e.g. <span class="font-mono text-gray-500">http://host:8000/v1</span>). Fill this so Nanobot knows where to send requests.
+                </p>
+              </div>
+              <div x-show="isProviderOn(p.key)" class="space-y-3">
+                <div x-show="!getProvider(p.key, 'apiKey')" class="text-xs text-gray-500">
+                  This provider is ON. Paste an API key to enable it.
+                </div>
+
+                <div x-show="getProvider(p.key, 'apiKey') && getModelsForProvider(p.key).length">
+                  <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Model</label>
+                  <select
+                    class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-gray-600 focus:ring-1 focus:ring-gray-600 transition-colors"
+                    :value="getModelDropdownValue(p.key)"
+                    @change="onModelDropdownChange(p.key, $event.target.value)">
+                    <template x-for="mid in getModelsForProvider(p.key)" :key="mid">
+                      <option :value="mid" x-text="mid"></option>
+                    </template>
+                    <option value="__others__">Others</option>
+                  </select>
+
+                  <p class="text-[10px] text-gray-600 mt-1.5">
+                    Which model ID Nanobot sends to this provider. Default is the smallest / lowest-tier option in the list.
+                  </p>
+
+                  <div x-show="getModelDropdownValue(p.key) === '__others__'" class="space-y-2">
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">
+                      Custom model id
+                    </label>
+                    <input
+                      type="text"
+                      class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2.5 text-sm text-gray-300 focus:border-gray-600 focus:outline-none"
+                      x-model="customModels[p.key]"
+                      @input="setCustomModel(p.key)"
+                      placeholder="e.g. gemini-2.1-pro">
+                    <p class="text-[10px] text-gray-600">
+                      Exact model name as accepted by this provider’s API (use when a newer model is not listed above).
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -648,19 +685,25 @@
         saving: false,
         restartAfterSave: true,
         toast: { show: false, message: '', type: 'success' },
+        customModels: {},
 
         providerList: [
+          // Requested order: Gemini, Anthropic, Groq, OpenAI, then the rest.
+          { key: 'gemini', label: 'Gemini', hasBase: false },
           { key: 'anthropic', label: 'Anthropic', hasBase: false },
-          { key: 'openai', label: 'OpenAI', hasBase: true, basePlaceholder: 'https://api.openai.com/v1' },
+          { key: 'groq', label: 'Groq', hasBase: false },
+          // OpenAI base URL is almost never needed for typical users; keep UI simple.
+          { key: 'openai', label: 'OpenAI', hasBase: false },
+          // OpenRouter can use different gateways / proxies; keeping apiBase is useful.
           { key: 'openrouter', label: 'OpenRouter', hasBase: true, basePlaceholder: 'https://openrouter.ai/api/v1' },
           { key: 'deepseek', label: 'DeepSeek', hasBase: false },
-          { key: 'groq', label: 'Groq', hasBase: false },
-          { key: 'gemini', label: 'Gemini', hasBase: false },
-          { key: 'zhipu', label: 'Zhipu', hasBase: true },
+          // Zhipu has a default base URL internally; most users only need an API key.
+          { key: 'zhipu', label: 'Zhipu', hasBase: false },
+          // vLLM is self-hosted: apiBase is required to point to your server.
           { key: 'vllm', label: 'vLLM', hasBase: true, basePlaceholder: 'http://localhost:8000/v1' },
         ],
 
-        // Curated model IDs per provider (smallest / lowest tier first). Nanobot uses `provider/modelId`.
+        // Curated model IDs per provider (smallest / lowest tier first).
         providerModels: {
           anthropic: [
             'claude-3-haiku-20240307',
@@ -703,8 +746,8 @@
         },
 
         get activeProviderCount() {
-          if (!this.status.providers) return 0;
-          return Object.values(this.status.providers).filter(p => p.configured).length;
+          const p = this.config?.agents?.defaults?.provider || 'auto';
+          return p !== 'auto' ? 1 : 0;
         },
 
         get enabledChannelCount() {
@@ -721,45 +764,80 @@
         },
 
         setProviderApiKey(key, value) {
-          const hadKey = !!this.getProvider(key, 'apiKey');
+          const prev = (this.getProvider(key, 'apiKey') || '').trim();
+          const next = (value || '').trim();
           this.setProvider(key, 'apiKey', value);
-          if (value.trim() && !hadKey) {
+
+          // If no provider is explicitly forced yet, first API key entered becomes the active one.
+          // This prevents using an unrelated default model when multiple keys exist.
+          if ((this.config?.agents?.defaults?.provider || 'auto') === 'auto' && !prev && next) {
+            this.config.agents.defaults.provider = key;
             const models = this.getModelsForProvider(key);
-            if (models.length) {
-              this.config.agents.defaults.model = `${key}/${models[0]}`;
-            }
+            if (models.length) this.config.agents.defaults.model = models[0];
+            this.customModels[key] = '';
+          }
+
+          // If the currently forced provider loses its key, return to auto.
+          if (this.isProviderOn(key) && !next) {
+            this.config.agents.defaults.provider = 'auto';
           }
         },
 
-        parsePrefixedModel(s) {
-          if (!s || typeof s !== 'string') return { provider: '', id: '' };
-          const i = s.indexOf('/');
-          if (i === -1) return { provider: '', id: s };
-          return { provider: s.slice(0, i), id: s.slice(i + 1) };
+        isProviderOn(key) {
+          return (this.config?.agents?.defaults?.provider || 'auto') === key;
+        },
+
+        toggleProvider(key) {
+          if (this.isProviderOn(key)) {
+            // Unforce provider; Nanobot will auto-detect based on configured keys + model.
+            this.config.agents.defaults.provider = 'auto';
+            return;
+          }
+
+          // Force exactly one provider ON.
+          this.config.agents.defaults.provider = key;
+          const models = this.getModelsForProvider(key);
+          if (models.length) {
+            // Lowest-tier default for the chosen provider.
+            this.config.agents.defaults.model = models[0];
+          }
         },
 
         getModelsForProvider(key) {
           return this.providerModels[key] || [];
         },
 
-        isActiveProviderModel(key) {
-          return this.parsePrefixedModel(this.config.agents?.defaults?.model || '').provider === key;
-        },
-
-        getModelIdForProvider(key) {
+        getModelDropdownValue(key) {
+          if (!this.isProviderOn(key)) return '';
+          const current = this.config.agents?.defaults?.model || '';
           const models = this.getModelsForProvider(key);
-          if (!models.length) return '';
-          const { provider, id } = this.parsePrefixedModel(this.config.agents?.defaults?.model || '');
-          if (provider === key) {
-            if (models.includes(id)) return id;
-            return models[0];
-          }
-          return models[0];
+          if (models.includes(current)) return current;
+          return '__others__';
         },
 
-        setProviderModel(providerKey, modelId) {
-          if (!modelId) return;
-          this.config.agents.defaults.model = `${providerKey}/${modelId}`;
+        onModelDropdownChange(key, value) {
+          if (!this.isProviderOn(key)) return;
+          if (!value) return;
+
+          if (value === '__others__') {
+            // Ensure customModels is seeded from current value.
+            if (!this.customModels[key] || this.getModelsForProvider(key).includes(this.customModels[key])) {
+              this.customModels[key] = this.config.agents.defaults.model || '';
+            }
+            this.config.agents.defaults.model = this.customModels[key] || this.config.agents.defaults.model;
+            return;
+          }
+
+          // Standard curated model.
+          this.customModels[key] = '';
+          this.config.agents.defaults.model = value;
+        },
+
+        setCustomModel(key) {
+          if (!this.isProviderOn(key)) return;
+          const v = (this.customModels[key] || '').trim();
+          if (!v) return;
+          this.config.agents.defaults.model = v;
         },
 
         async init() {
@@ -854,7 +932,7 @@
 
     function defaultConfig() {
       return {
-        agents: { defaults: { workspace: '~/.nanobot/workspace', model: 'anthropic/claude-3-haiku-20240307', maxTokens: 8192, temperature: 0.7, maxToolIterations: 20 } },
+        agents: { defaults: { workspace: '~/.nanobot/workspace', provider: 'auto', model: 'claude-3-haiku-20240307', maxTokens: 8192, temperature: 0.7, maxToolIterations: 20 } },
         channels: {
           telegram: { enabled: false, token: '', allowFrom: [], proxy: null },
           whatsapp: { enabled: false, bridgeUrl: 'ws://localhost:3001', allowFrom: [] },
