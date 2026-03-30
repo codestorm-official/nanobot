@@ -448,7 +448,10 @@
                   class="w-full bg-black border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-300 focus:border-gray-600 focus:outline-none"
                   :value="(config.channels.telegram.allowFrom || []).join(', ')"
                   @input="config.channels.telegram.allowFrom = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
-                  placeholder="Comma separated IDs">
+                  placeholder="* or comma-separated numeric IDs">
+                <p class="text-[10px] text-gray-600 mt-1.5">
+                  Use <span class="font-mono text-gray-500">*</span> alone to allow all user IDs. Otherwise list numeric Telegram user IDs separated by commas.
+                </p>
               </div>
             </div>
           </div>
@@ -729,9 +732,7 @@
             'mixtral-8x7b-32768',
           ],
           gemini: [
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-1.5-pro',
+            'gemini-2.5-pro',
           ],
           zhipu: [
             'glm-4-flash',
@@ -796,6 +797,7 @@
 
           // Force exactly one provider ON.
           this.config.agents.defaults.provider = key;
+          this.customModels[key] = '';
           const models = this.getModelsForProvider(key);
           if (models.length) {
             // Lowest-tier default for the chosen provider.
@@ -820,11 +822,17 @@
           if (!value) return;
 
           if (value === '__others__') {
-            // Ensure customModels is seeded from current value.
-            if (!this.customModels[key] || this.getModelsForProvider(key).includes(this.customModels[key])) {
-              this.customModels[key] = this.config.agents.defaults.model || '';
+            const models = this.getModelsForProvider(key);
+            const cur = this.config.agents?.defaults?.model || '';
+            if (models.includes(cur)) {
+              // Switching from a curated option: clear model so dropdown stays on "Others" and user types a custom id.
+              this.customModels[key] = '';
+              this.config.agents.defaults.model = '';
+            } else {
+              // Already a custom / unknown id: keep it in the text field.
+              this.customModels[key] = cur;
+              this.config.agents.defaults.model = cur;
             }
-            this.config.agents.defaults.model = this.customModels[key] || this.config.agents.defaults.model;
             return;
           }
 
@@ -836,8 +844,23 @@
         setCustomModel(key) {
           if (!this.isProviderOn(key)) return;
           const v = (this.customModels[key] || '').trim();
-          if (!v) return;
           this.config.agents.defaults.model = v;
+        },
+
+        syncCustomModelsFromConfig() {
+          const prov = this.config?.agents?.defaults?.provider;
+          if (!prov || prov === 'auto') return;
+          const models = this.getModelsForProvider(prov);
+          const m = (this.config?.agents?.defaults?.model || '').trim();
+          if (!m) {
+            this.customModels[prov] = '';
+            return;
+          }
+          if (!models.includes(m)) {
+            this.customModels[prov] = m;
+          } else {
+            this.customModels[prov] = '';
+          }
         },
 
         async init() {
@@ -854,6 +877,7 @@
             if (res.ok) {
               const data = await res.json();
               this.config = mergeDeep(defaultConfig(), data);
+              this.syncCustomModelsFromConfig();
             }
           } catch (e) { }
         },
@@ -934,7 +958,7 @@
       return {
         agents: { defaults: { workspace: '~/.nanobot/workspace', provider: 'auto', model: 'claude-3-haiku-20240307', maxTokens: 8192, temperature: 0.7, maxToolIterations: 20 } },
         channels: {
-          telegram: { enabled: false, token: '', allowFrom: [], proxy: null },
+          telegram: { enabled: false, token: '', allowFrom: ['*'], proxy: null },
           whatsapp: { enabled: false, bridgeUrl: 'ws://localhost:3001', allowFrom: [] },
           feishu: { enabled: false, appId: '', appSecret: '', encryptKey: '', verificationToken: '', allowFrom: [] },
         },
