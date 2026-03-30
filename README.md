@@ -2,18 +2,18 @@
 
 ## Nanobot AI on Railway (Template)
 
-Template ini menjalankan **Nanobot gateway** + **admin dashboard** di Railway via Docker.
+This template runs **Nanobot gateway** + an **admin dashboard** on Railway via Docker.
 
 ## Architecture
 ![Architecture](https://github.com/HKUDS/nanobot/raw/main/nanobot_arch.png)
 
 ## What this template provides
 - **Admin dashboard** (Starlette + Jinja + Tailwind CDN)
-- **Gateway process** (`nanobot gateway`) yang bisa start/stop/restart dari dashboard
+- **Gateway process** (`nanobot gateway`) that you can start/stop/restart from the dashboard
 - **Healthcheck** endpoint: `/health`
-- **Persistent data** di `/data/.nanobot` (cocok untuk Railway Volume)
+- **Persistent data** stored under `/data/.nanobot` (works great with a Railway Volume)
 
-Catatan: **Nanobot bukan chat interface** — ini backend API gateway untuk routing ke berbagai LLM provider.
+Note: **Nanobot is not a chat interface** — it’s a backend API gateway for routing across multiple LLM providers.
 
 ## Common Use Cases
 **📅 Smart Daily Routine Manager**
