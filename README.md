@@ -1,66 +1,133 @@
+# Deploy and Host nanobot on Railway
+
+Nanobot is a lightweight AI gateway and orchestration layer that routes requests across multiple LLM providers and messaging channels such as Telegram. It provides a centralized dashboard to manage models, API keys, and runtime configuration, making it ideal for building scalable AI-powered backends without managing multiple integrations manually.
+
 ![Nanobot](https://github.com/HKUDS/nanobot/raw/main/nanobot_logo.png)
 
-## Nanobot on Railway — usage guide
-
-This template runs the **Nanobot gateway** and **admin dashboard** via Docker. Nanobot is a backend for routing requests across multiple LLM providers and messaging channels (e.g. Telegram), not a full chat UI.
+## About Hosting nanobot
 
 ![Architecture](https://github.com/HKUDS/nanobot/raw/main/nanobot_arch.png)
 
-### Step 1 — Deploy on Railway
+Hosting nanobot involves deploying a containerized gateway service along with its admin dashboard. The system acts as a middleware between your applications (or chat channels) and multiple AI providers such as OpenAI, Gemini, or Groq.
 
-1. Create a new Railway project from this repository (or use a Railway template if available).
-2. The build uses the `Dockerfile` (configured in `railway.toml`).
-3. Railway will assign a public URL automatically.
-4. **Strongly recommended:** add a **Volume** mounted at `/data` so configuration and data persist across redeploys.
+Instead of hardcoding API integrations, nanobot allows dynamic configuration via a web dashboard, with persistent storage for settings. On Railway, deployment becomes straightforward: you run a Docker container, attach a persistent volume, and configure environment variables. Railway handles networking, scaling, and uptime, while nanobot handles AI routing, logging, and orchestration.
 
-### Step 2 — Admin username and password
+## Common Use Cases
 
-Set these in Railway environment variables:
+* Multi-LLM Gateway (OpenAI, Gemini, Groq switching & fallback)
+* Telegram / Messaging AI Bot backend (no need to build from scratch)
+* Internal AI API Hub (centralized AI access for multiple services)
+* Experimentation layer for prompt routing and model benchmarking
 
-- **`ADMIN_USERNAME`** — username for dashboard login.
-- **`ADMIN_PASSWORD`** — password for dashboard login.
+## Dependencies for nanobot Hosting
 
-`PORT` is usually provided by Railway. If **`ADMIN_PASSWORD`** is empty, the server may generate a random password and print it to the logs — for production, always set it explicitly.
+* Docker (containerized deployment)
+* Railway account (for hosting and infrastructure)
+* Persistent storage (/data volume for config & logs)
 
-See `.env.example` for a starting point.
+### Deployment Dependencies
 
-### Step 3 — LLM API keys and models
+* Upstream Nanobot: [https://github.com/HKUDS/nanobot](https://github.com/HKUDS/nanobot)
+* Railway Platform: [https://railway.com](https://railway.com)
+* Telegram Bot (optional): [https://core.telegram.org/bots](https://core.telegram.org/bots)
 
-1. Open the Nanobot dashboard (your Railway URL) and sign in with Basic Auth using the credentials above.
-2. Open the **AI Providers** tab.
-3. For each provider you use (e.g. OpenAI, Groq, Gemini), enter the **API Key**.
-4. Choose the **model** you want (curated lists; **Others** for a custom model id).
-5. Turn on one provider as the default (toggle) as needed.
-6. Save configuration from the dashboard (data is stored on the `/data` volume).
+### Implementation Details
 
-### Step 4 — Messaging channels (example: Telegram bot)
+#### Architecture Overview
 
-1. Open the **Channels** tab.
-2. For **Telegram**, enable the channel and paste the **token** from BotFather.
-3. Set **Allowed User IDs** — use `*` alone to allow everyone, or comma-separated numeric IDs.
-4. Configure other channels (WhatsApp bridge, Feishu, etc.) here per their documentation.
-5. Save your changes in the dashboard.
+Nanobot runs as a single container that exposes:
 
-### Step 5 — Run the gateway and test
+* Admin Dashboard (Basic Auth protected)
+* Gateway API for routing requests
+* Background worker loop (for message processing)
 
-1. Under **Settings** or the **Save & Start** flow on Overview, apply configuration and start or **Restart** the **gateway** from the dashboard when available.
-2. Check **Logs** to confirm the gateway is running without errors.
-3. Send a test message to your Telegram bot (or another channel you configured).
+Data persistence:
 
-### Key endpoints
+* All configuration and state stored in `/data` (must use Railway Volume)
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | Admin dashboard (Basic Auth) |
-| `GET /health` | Healthcheck (for Railway) |
-| `GET /api/config` | Read configuration (secrets masked) |
-| `PUT /api/config` | Save configuration |
-| `GET /api/status` | Gateway status; provider/channel summary |
-| `GET /api/logs` | Gateway logs |
-| `POST /api/gateway/start` | Start gateway |
-| `POST /api/gateway/stop` | Stop gateway |
-| `POST /api/gateway/restart` | Restart gateway |
+#### Step 1 — Deploy on Railway
 
-### Upstream project
+* Deploy this template on Railway
+* Railway builds using the `Dockerfile` (via `railway.toml`)
+* A public URL will be automatically assigned
+* Strongly recommended:
 
-- Upstream Nanobot: https://github.com/HKUDS/nanobot
+  * Attach a Volume mounted to `/data` (critical for persistence)
+
+#### Step 2 — Admin Credentials
+
+Set environment variables:
+
+* `ADMIN_USERNAME` → dashboard login username
+* `ADMIN_PASSWORD` → dashboard login password
+
+Notes:
+* For production: ALWAYS set explicitly
+
+#### Step 3 — Configure LLM Providers
+
+1. Open your Railway public URL
+2. Login using Basic Auth
+3. Go to **AI Providers tab**
+4. Add API Keys:
+
+   * OpenAI
+   * Groq
+   * Gemini
+5. Select models (or custom model ID)
+6. Set default provider (toggle)
+7. Save configuration (stored in `/data`)
+
+    ![AI Providers tab](./img/ai_providers.png)
+
+#### Step 4 — Configure Messaging Channels (Telegram Example)
+
+1. Go to **Channels tab**
+2. Enable Telegram
+3. Paste bot token from BotFather
+4. Set allowed users:
+
+   * `*` → allow all users
+   * or specific user IDs (comma-separated)
+
+    ![Channels tab](./img/channels.png)
+
+You can also configure:
+
+* WhatsApp bridge
+* Feishu / other integrations
+
+#### Step 5 — Run and Test Gateway
+
+* Go to **Overview / Settings**
+* Start or restart the gateway
+* Check logs for errors
+* Send test message to your bot
+
+    ![Overview tab](./img/overview.png)
+
+If no response:
+
+* Check API keys
+* Check provider selection
+* Check logs
+  
+  ![Logs](./img/logs.png)
+
+#### Key Endpoints
+
+* `GET /` → Admin dashboard (Basic Auth)
+* `GET /health` → Healthcheck (Railway)
+* `GET /api/config` → Read config (masked)
+* `PUT /api/config` → Save config
+* `GET /api/status` → Gateway status
+* `GET /api/logs` → Logs
+* `POST /api/gateway/start` → Start gateway
+* `POST /api/gateway/stop` → Stop gateway
+* `POST /api/gateway/restart` → Restart gateway
+
+## Why Deploy nanobot on Railway?
+
+Railway is a singular platform to deploy your infrastructure stack. Railway will host your infrastructure so you don't have to deal with configuration, while allowing you to vertically and horizontally scale it.
+
+By deploying nanobot on Railway, you are one step closer to supporting a complete full-stack application with minimal burden. Host your servers, databases, AI agents, and more on Railway.
